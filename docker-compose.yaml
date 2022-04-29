@@ -1,0 +1,91 @@
+version: '3'
+
+services:
+  data-store:
+    build: ./data-store
+    container_name: data-store-1
+    ports:
+      - "${DATA_STORE_PORT}"
+    volumes:
+      - ./data-store:/home
+    environment:
+      - DATA_HOST_DIR=/home/data
+
+  
+  worker:
+    build: ./r-service
+    container_name: r-worker
+    ports:
+      - "8082:8080"
+    volumes:
+      - ./r-service:/home
+
+  cache:
+    image: redis
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+    
+  queue:
+    image: rabbitmq:3-management
+    container_name: working-queue
+    ports:
+      - "8080:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+
+  application:
+    build: ./application-service
+    container_name: app
+    ports:
+      - "8081:80"
+    volumes:
+      - ./application-service:/home
+    depends_on:
+      - data-store
+      - queue
+      - cache
+      - worker
+      - mongo
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  broker:
+    build: ./broker-service
+    ports:
+      - "81:80"
+    volumes:
+      - ./broker-service:/home
+    depends_on:
+      - data-store
+      - queue
+      - cache
+      - application
+      - worker
+      - mongo
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8083:8081
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017
+
+  web:
+    build: ./front
+    volumes:
+      - ./front/dist:/usr/share/nginx/html/
+    ports:
+      - "8084:80"
+    environment:
+      - NGINX_HOST=127.0.0.1
+      - NGINX_PORT=80

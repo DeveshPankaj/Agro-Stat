@@ -1,0 +1,15 @@
+
+
+FROM r-base
+
+WORKDIR /home
+ENV DATA_HOST_DIR=/host
+
+RUN apt update
+RUN apt install nodejs -y
+RUN apt install npm -y
+
+
+
+CMD [ "npm", "start" ]
+EXPOSE 3000

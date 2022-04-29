@@ -1,0 +1,7 @@
+FROM nginx
+
+WORKDIR /home
+
+ENV NGINX_HOST=127.0.0.1
+ENV NGINX_PORT=80
+

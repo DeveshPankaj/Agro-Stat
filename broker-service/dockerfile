@@ -1,0 +1,9 @@
+
+FROM alpine
+
+WORKDIR /home
+
+RUN apk add --update nodejs npm
+# RUN npm i
+
+CMD [ "npm", "start" ]

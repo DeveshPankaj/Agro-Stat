@@ -1,0 +1,14 @@
+
+FROM r-base
+WORKDIR /home
+
+
+RUN apt update
+RUN apt install nodejs -y
+RUN apt install npm -y
+
+
+RUN Rscript -e "install.packages('rjson')"
+
+
+CMD [ "npm", "start"]
